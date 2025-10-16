@@ -1,0 +1,7 @@
+export enum DownloadStatus {
+  PENDING = 'PENDING',
+  DOWNLOADING = 'DOWNLOADING',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED',
+  PARTIAL = 'PARTIAL',
+}
