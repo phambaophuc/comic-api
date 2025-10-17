@@ -111,6 +111,7 @@ export class MangaSeriesService {
                 image_order: 'asc',
               },
             },
+            series: true,
           },
         },
       },
