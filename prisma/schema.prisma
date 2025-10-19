@@ -45,7 +45,7 @@ model MangaSeries {
 model MangaChapter {
   id              Int            @id @default(autoincrement())
   series_id       Int
-  chapter_number  String
+  chapter_number  Float
   chapter_title   String?
   chapter_url     String
   image_count     Int            @default(0)

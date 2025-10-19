@@ -1,15 +1,15 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { DownloadStatus } from '@prisma/client';
-import { IsBoolean, IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateMangaChapterDto {
   @ApiProperty({ example: 1 })
   @IsInt()
   series_id: number;
 
-  @ApiProperty({ example: '1' })
-  @IsString()
-  chapter_number: string;
+  @ApiProperty({ example: 1 })
+  @IsNumber()
+  chapter_number: number;
 
   @ApiPropertyOptional({ example: 'The Beginning' })
   @IsOptional()

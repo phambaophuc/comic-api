@@ -84,7 +84,7 @@ export class MangaSeriesService {
     return series;
   }
 
-  async findBySlugAndChapter(slug: string, cn: string) {
+  async findBySlugAndChapter(slug: string, cn: number) {
     const chapter = await this.prisma.mangaSeries.findUnique({
       where: {
         slug,

@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseFloatPipe,
   ParseIntPipe,
   Patch,
   Post,
@@ -49,7 +50,7 @@ export class MangaSeriesController {
   @ApiResponse({ status: 404, description: 'Chapter not found' })
   findBySlugAndChapter(
     @Param('slug') slug: string,
-    @Param('chapter_number') chapterNumber: string,
+    @Param('chapter_number', ParseFloatPipe) chapterNumber: number,
   ) {
     return this.service.findBySlugAndChapter(slug, chapterNumber);
   }
