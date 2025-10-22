@@ -1,16 +1,22 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
-import { PaginationDto } from '@/common/dto';
+import { PaginationParamDto } from '@/common/dto';
 import { PrismaService } from '@/prisma';
 import { generateSlug } from '@/shared/utils';
 
-import { CreateMangaSeriesDto, UpdateMangaSeriesDto } from './dto';
+import {
+  CreateMangaSeriesDto,
+  CreateMangaSeriesResponseDto,
+  FindAllMangaSeriesResponseDto,
+  FindBySlugResponseDto,
+  FindHotComicsResponseDto,
+} from './dto';
 
 @Injectable()
 export class MangaSeriesService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createDto: CreateMangaSeriesDto) {
+  async create(createDto: CreateMangaSeriesDto): Promise<CreateMangaSeriesResponseDto> {
     return await this.prisma.mangaSeries.create({
       data: {
         ...createDto,
@@ -18,12 +24,11 @@ export class MangaSeriesService {
       },
       include: {
         source: true,
-        chapters: { take: 10, orderBy: { created_at: 'desc' } },
       },
     });
   }
 
-  async findAll(paginationDto: PaginationDto) {
+  async findAll(paginationDto: PaginationParamDto): Promise<FindAllMangaSeriesResponseDto> {
     const { page = 1, limit = 10 } = paginationDto;
     const skip = (page - 1) * limit;
 
@@ -32,6 +37,12 @@ export class MangaSeriesService {
         skip,
         take: limit,
         orderBy: { updated_at: 'desc' },
+        include: {
+          chapters: {
+            orderBy: { chapter_number: 'desc' },
+            take: 1,
+          },
+        },
       }),
       this.prisma.mangaSeries.count(),
     ]);
@@ -47,26 +58,16 @@ export class MangaSeriesService {
     };
   }
 
-  async findOne(id: number) {
-    const series = await this.prisma.mangaSeries.findUnique({
-      where: { id },
-      include: {
-        source: true,
-        chapters: {
-          where: { is_deleted: false },
-          orderBy: { created_at: 'desc' },
-        },
+  async findHotComics(limit: number = 5): Promise<FindHotComicsResponseDto[]> {
+    return this.prisma.mangaSeries.findMany({
+      orderBy: {
+        views: 'desc',
       },
+      take: limit,
     });
-
-    if (!series) {
-      throw new NotFoundException(`MangaSeries with ID ${id} not found`);
-    }
-
-    return series;
   }
 
-  async findBySlug(slug: string) {
+  async findBySlug(slug: string): Promise<FindBySlugResponseDto> {
     const series = await this.prisma.mangaSeries.findUnique({
       where: { slug },
       include: {
@@ -82,60 +83,5 @@ export class MangaSeriesService {
     }
 
     return series;
-  }
-
-  async findBySlugAndChapter(slug: string, cn: number) {
-    const chapter = await this.prisma.mangaSeries.findUnique({
-      where: {
-        slug,
-      },
-      select: {
-        _count: {
-          select: {
-            chapters: {
-              where: {
-                is_deleted: false,
-              },
-            },
-          },
-        },
-        chapters: {
-          where: { chapter_number: cn },
-          include: {
-            images: {
-              select: {
-                image_order: true,
-                local_path: true,
-              },
-              orderBy: {
-                image_order: 'asc',
-              },
-            },
-            series: true,
-          },
-        },
-      },
-    });
-    if (!chapter) throw new NotFoundException('Chapter not found');
-    return { ...chapter.chapters[0], total_chapters: chapter._count.chapters };
-  }
-
-  async update(id: number, updateDto: UpdateMangaSeriesDto) {
-    await this.findOne(id);
-    return this.prisma.mangaSeries.update({
-      where: { id },
-      data: updateDto,
-      include: {
-        source: true,
-        chapters: { take: 10 },
-      },
-    });
-  }
-
-  async remove(id: number) {
-    await this.findOne(id);
-    return this.prisma.mangaSeries.delete({
-      where: { id },
-    });
   }
 }

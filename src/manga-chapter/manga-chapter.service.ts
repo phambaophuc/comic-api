@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '@/prisma';
 
 import { CreateMangaChapterDto } from './dto';
+import { FindByChapterResponseDto } from './dto/response.dto';
 
 @Injectable()
 export class MangaChapterService {
@@ -18,29 +19,26 @@ export class MangaChapterService {
     });
   }
 
-  async findOne(id: number) {
-    const chapter = await this.prisma.mangaChapter.findUnique({
-      where: { id },
-      include: {
-        series: true,
-        images: {
-          orderBy: { image_order: 'asc' },
+  async findByChapterNumber(slug: string, cn: number): Promise<FindByChapterResponseDto> {
+    const [chapter, total] = await Promise.all([
+      this.prisma.mangaChapter.findFirstOrThrow({
+        where: { chapter_number: cn, series: { slug } },
+        include: {
+          series: true,
+          images: {
+            select: {
+              image_order: true,
+              local_path: true,
+            },
+            orderBy: { image_order: 'asc' },
+          },
         },
-      },
-    });
+      }),
+      this.prisma.mangaChapter.count({
+        where: { series: { slug }, is_deleted: false },
+      }),
+    ]);
 
-    if (!chapter || chapter.is_deleted) {
-      throw new NotFoundException(`MangaChapter with ID ${id} not found`);
-    }
-
-    return chapter;
-  }
-
-  async remove(id: number) {
-    await this.findOne(id);
-    return this.prisma.mangaChapter.update({
-      where: { id },
-      data: { is_deleted: true },
-    });
+    return { ...chapter, total_chapters: total };
   }
 }
