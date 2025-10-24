@@ -12,5 +12,8 @@ export class MangaChapterWithImagesAndSeriesDto extends MangaChapterDto {
 
 export class FindByChapterResponseDto extends MangaChapterWithImagesAndSeriesDto {
   @ApiProperty()
-  total_chapters: number;
+  prev_chapter: number | null;
+
+  @ApiProperty()
+  next_chapter: number | null;
 }
