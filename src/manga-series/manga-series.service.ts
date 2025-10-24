@@ -34,9 +34,6 @@ export class MangaSeriesService {
 
     const [series, total] = await Promise.all([
       this.prisma.mangaSeries.findMany({
-        skip,
-        take: limit,
-        orderBy: { updated_at: 'desc' },
         include: {
           chapters: {
             orderBy: { chapter_number: 'desc' },
@@ -47,10 +44,13 @@ export class MangaSeriesService {
       this.prisma.mangaSeries.count(),
     ]);
 
-    const data = series.map((s) => ({
-      ...s,
-      updated_at: s.chapters[0]?.created_at ?? s.updated_at,
-    }));
+    const data = series
+      .map((s) => ({
+        ...s,
+        updated_at: s.chapters[0]?.created_at ?? s.updated_at,
+      }))
+      .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+      .slice(skip, skip + limit);
 
     return {
       data,
