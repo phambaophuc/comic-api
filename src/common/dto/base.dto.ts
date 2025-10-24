@@ -108,4 +108,7 @@ export class MangaSeriesDto extends BaseDto {
 
   @ApiProperty({ enum: SeriesStatus })
   status: SeriesStatus;
+
+  @ApiProperty()
+  last_update: Date | null;
 }
