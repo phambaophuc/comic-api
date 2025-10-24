@@ -32,7 +32,7 @@ export class MangaSeriesService {
     const { page = 1, limit = 10 } = paginationDto;
     const skip = (page - 1) * limit;
 
-    const [data, total] = await Promise.all([
+    const [series, total] = await Promise.all([
       this.prisma.mangaSeries.findMany({
         skip,
         take: limit,
@@ -46,6 +46,11 @@ export class MangaSeriesService {
       }),
       this.prisma.mangaSeries.count(),
     ]);
+
+    const data = series.map((s) => ({
+      ...s,
+      updated_at: s.chapters[0]?.created_at ?? s.updated_at,
+    }));
 
     return {
       data,
