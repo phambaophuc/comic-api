@@ -1,9 +1,7 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { PaginationParamDto } from '@/common/dto';
-
-import { CreateMangaSeriesDto } from './dto';
+import { CreateMangaSeriesDto, FindAllParamDto } from './dto';
 import { MangaSeriesService } from './manga-series.service';
 
 @ApiTags('Comics')
@@ -21,8 +19,8 @@ export class MangaSeriesController {
   @Get()
   @ApiOperation({ summary: 'Get all manga series' })
   @ApiResponse({ status: 200, description: 'Return all series' })
-  findAll(@Query() paginationDto: PaginationParamDto) {
-    return this.service.findAll(paginationDto);
+  findAll(@Query() paramDto: FindAllParamDto) {
+    return this.service.findAll(paramDto);
   }
 
   @Get('hot')

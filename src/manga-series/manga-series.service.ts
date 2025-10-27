@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
-import { PaginationParamDto } from '@/common/dto';
 import { PrismaService } from '@/prisma';
 import { generateSlug } from '@/shared/utils';
 
@@ -8,6 +7,7 @@ import {
   CreateMangaSeriesDto,
   CreateMangaSeriesResponseDto,
   FindAllMangaSeriesResponseDto,
+  FindAllParamDto,
   FindBySlugResponseDto,
   FindHotComicsResponseDto,
 } from './dto';
@@ -28,19 +28,27 @@ export class MangaSeriesService {
     });
   }
 
-  async findAll(paginationDto: PaginationParamDto): Promise<FindAllMangaSeriesResponseDto> {
-    const { page = 1, limit = 10 } = paginationDto;
+  async findAll(paramDto: FindAllParamDto): Promise<FindAllMangaSeriesResponseDto> {
+    const { page = 1, limit = 10, genres = [] } = paramDto;
     const skip = (page - 1) * limit;
+
+    const whereCondition: any = {
+      last_update: {
+        not: null,
+      },
+    };
+
+    if (genres && genres.length > 0) {
+      whereCondition.genres = {
+        hasEvery: genres,
+      };
+    }
 
     const [data, total] = await Promise.all([
       this.prisma.mangaSeries.findMany({
         skip,
         take: limit,
-        where: {
-          last_update: {
-            not: null,
-          },
-        },
+        where: whereCondition,
         orderBy: { last_update: 'desc' },
         include: {
           chapters: {
@@ -49,7 +57,9 @@ export class MangaSeriesService {
           },
         },
       }),
-      this.prisma.mangaSeries.count(),
+      this.prisma.mangaSeries.count({
+        where: whereCondition,
+      }),
     ]);
 
     return {

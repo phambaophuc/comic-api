@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 import { MangaChapterModule } from './manga-chapter';
 import { MangaSeriesModule } from './manga-series';
@@ -10,6 +11,14 @@ import { PrismaModule } from './prisma';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+    }),
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60000,
+          limit: 10,
+        },
+      ],
     }),
     PrismaModule,
     MangaSourceModule,
