@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { CreateMangaSeriesDto, FindAllParamDto } from './dto';
@@ -21,13 +21,6 @@ export class MangaSeriesController {
   @ApiResponse({ status: 200, description: 'Return all series' })
   findAll(@Query() paramDto: FindAllParamDto) {
     return this.service.findAll(paramDto);
-  }
-
-  @Get('hot')
-  @ApiOperation({ summary: 'Get manga series hot' })
-  @ApiResponse({ status: 200, description: 'Return series hot' })
-  getHotComics(@Query('limit', ParseIntPipe) limit: number) {
-    return this.service.findHotComics(limit);
   }
 
   @Get(':slug')

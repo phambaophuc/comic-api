@@ -9,7 +9,6 @@ import {
   FindAllMangaSeriesResponseDto,
   FindAllParamDto,
   FindBySlugResponseDto,
-  FindHotComicsResponseDto,
 } from './dto';
 
 @Injectable()
@@ -29,19 +28,15 @@ export class MangaSeriesService {
   }
 
   async findAll(paramDto: FindAllParamDto): Promise<FindAllMangaSeriesResponseDto> {
-    const { page = 1, limit = 10, genres = [] } = paramDto;
+    const { page = 1, limit = 10, genres = [], sort = 'last_update', order = 'desc' } = paramDto;
     const skip = (page - 1) * limit;
 
     const whereCondition: any = {
-      last_update: {
-        not: null,
-      },
+      last_update: { not: null },
     };
 
-    if (genres && genres.length > 0) {
-      whereCondition.genres = {
-        hasEvery: genres,
-      };
+    if (genres.length > 0) {
+      whereCondition.genres = { hasEvery: genres };
     }
 
     const [data, total] = await Promise.all([
@@ -49,7 +44,7 @@ export class MangaSeriesService {
         skip,
         take: limit,
         where: whereCondition,
-        orderBy: { last_update: 'desc' },
+        orderBy: { [sort]: order },
         include: {
           chapters: {
             orderBy: { chapter_number: 'desc' },
@@ -71,15 +66,6 @@ export class MangaSeriesService {
         totalPages: Math.ceil(total / limit),
       },
     };
-  }
-
-  async findHotComics(limit: number = 5): Promise<FindHotComicsResponseDto[]> {
-    return this.prisma.mangaSeries.findMany({
-      orderBy: {
-        views: 'desc',
-      },
-      take: limit,
-    });
   }
 
   async findBySlug(slug: string): Promise<FindBySlugResponseDto> {
